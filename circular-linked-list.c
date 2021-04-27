@@ -7,13 +7,11 @@
  *  at Chungbuk National University
  *
  */
-///////반환값 한 번만 확인하고 제출하기!!! 
 
 #include<stdio.h>
 #include<stdlib.h>
-/* 필요한 헤더파일 추가 */
 
-//헤더 노드(더미 공간)가 있는 이중 연결 원형 리스트 
+/* 헤더 노드(더미 공간)가 있는 이중 연결 원형 리스트 */
 typedef struct Node {
 	int key;
 	struct Node* llink;
@@ -35,12 +33,11 @@ int deleteNode(listNode* h, int key);
 void printList(listNode* h);
 
 
-
 int main()
 {
 	char command;
 	int key;
-	listNode* headnode=NULL;
+	listNode* headnode=NULL;	
 
 	printf("[----- [jinyoungLee] [2020039063] -----]\n");
 	do{
@@ -106,6 +103,7 @@ int main()
 	return 1;
 }
 
+
 /* 헤드노드 초기화 */
 int initialize(listNode** h) {
 
@@ -113,7 +111,8 @@ int initialize(listNode** h) {
 	if(*h != NULL)
 		freeList(*h);
 
-	/* headNode에 대한 메모리를 할당하여 리턴 */
+	/* headNode에 대한 메모리를 할당하여 리턴 
+		headNode의 포인터 및 데이터 초기화 */
 	*h = (listNode*)malloc(sizeof(listNode));
 	(*h)->rlink = *h;
 	(*h)->llink = *h;
@@ -121,22 +120,24 @@ int initialize(listNode** h) {
 	return 1;
 }
 
+
 /* 메모리 해제 */
 int freeList(listNode* h){
 	
 	listNode* p=h->rlink;    //p가 처음노드를 가리키도록 설정 
 	
 	//노드가 존재하면 메모리 해제하기
-	while(p->rlink!=NULL)
+	while(p->rlink!=h)      //원형이므로, p->rlink!=NULL을 조건식으로 사용하면 안 된다. 
 	{
 		p=p->rlink;
 		free(p->llink);  	//이전 노드 메모리 해제 
 	}
 	//p가 마지막 노드일 때
-	free(p);
-	free(h);  //Q.? 
+	free(p);	//마지막 노드 메모리 해제
+	free(h);  	//헤더 노드 메모리 해제 			
 	return 0;
 }
+
 
 /* 리스트 출력 */
 void printList(listNode* h) {
@@ -145,19 +146,21 @@ void printList(listNode* h) {
 
 	printf("\n---PRINT\n");
 
+	//리스트에 헤더노드를 가진 공백일 때, 
 	if(h == NULL) {
 		printf("Nothing to print....\n");
 		return;
 	}
 
-	p = h->rlink;
+	p = h->rlink;	//p는 헤더노드가 가리키는 첫번째 노드를 가리키도록 설정 
 
-	while(p != NULL && p != h) {
+	//각 노드마다 데이터 값 출력
+	while(p != NULL && p != h) {                                 //Q.왜 p!=NULL?
 		printf("[ [%d]=%d ] ", i, p->key);
-		p = p->rlink;
+		p = p->rlink;		//다음노드로 설정
 		i++;
 	}
-	printf("  items = %d\n", i);
+	printf("  items = %d\n", i);	//노드의 개수 출력(헤더노드 제외)
 
 
 	/* print addresses */
@@ -172,13 +175,11 @@ void printList(listNode* h) {
 		p = p->rlink;
 		i++;
 	}
-
 }
 
 
-
 /**
- * list 마지막에 key에 대한 노드하나를 추가
+ * list '마지막'에 key에 대한 노드하나를 추가
  */
 int insertLast(listNode* h, int key) {
 	listNode* newnode=(listNode*)malloc(sizeof(listNode)); //새 노드 생성(동적할당)
@@ -187,7 +188,7 @@ int insertLast(listNode* h, int key) {
 	newnode->rlink=NULL;
 	newnode->llink=NULL;
 
-	//노드가 존재하지 않을 때  
+	//헤더노드가 존재한 공백일 때  
 	if((h->llink==h)&&(h->rlink==h)) 
 	{
 		newnode->llink=h;
@@ -197,23 +198,15 @@ int insertLast(listNode* h, int key) {
 		return 1;
 	}
 	
-	//노드가 존재할 때
+	//헤더노드가 존재하고, 또다른 노드가 존재할 때
 	else
-	{
-		// listNode*inserted=h->llink;  //list마지막 노드를 가리키는 포인터 생성 
-		// newnode->rlink=h;
-		// newnode->llink=inserted;
-		// inserted->rlink=newnode;
-		// h->llink=newnode;
-		
-		//list마지막 노드를 가리키는 포인터 생성하지 않고, 헤더노드 이용하면,
+	{		
 		newnode->rlink=h;
 		newnode->llink=h->llink;
 		h->llink->rlink=newnode;
 		h->llink=newnode;
 		return 1;
 	}
-	return 1;
 }
 
 
@@ -223,29 +216,27 @@ int insertLast(listNode* h, int key) {
 int deleteLast(listNode* h) {
 
 	listNode* deleted=NULL;		//삭제할 노드를 가리키는 포인터 생성
-	deleted=h->llink;			//deleted를 마지막 노드로 설정하기
-
-	//노드가 존재하지 않을 때 -> 삭제할 노드가 없으므로 에러 발생 
-	if((h->llink==h)&&(h->rlink==h))    /*Q. if(h==NULL)과 동일? 흠.. 아닌 거 같아.*/
+	deleted=h->llink;			//deleted를 리스트의 마지막 노드로 설정하기
+	
+	//헤더노드가 존재한 공백일 때 -> 삭제할 노드가 없으므로 에러 발생 
+	if((h->llink==h)&&(h->rlink==h))    
 	{
 		printf("ERROR: There is no node to remove.\n");
 		return -1;
 	}
 
-	//노드가 1개 존재할 때
-	else if(deleted->rlink==h)  //Q. deleted->rlink==h->llink와 동일한가?
+	//헤더노드가 존재하고, 또다른 노드가 1개 존재할 때
+	else if(deleted->rlink==h)      
 	{
 		deleted->llink->rlink=h;
 		deleted->rlink->llink=h;
-		// // 동일한 코드인가?
 		// h->rlink=h;
 		// h->llink=h;
-
 		free(deleted); //노드 삭제(메모리 해제)
 		return 1;
 	}
 
-	//노드가 2개 이상 존재할 때
+	//헤더노드가 존재하고, 또다른 노드가 2개 이상 존재할 때
 	else  
 	{
 		deleted->llink->rlink=h;
@@ -257,7 +248,7 @@ int deleteLast(listNode* h) {
 
 
 /**
- * list 처음에 key에 대한 노드하나를 추가
+ * list '처음에' key에 대한 노드하나를 추가
  */
 int insertFirst(listNode* h, int key) {
 	listNode* newnode=(listNode*)malloc(sizeof(listNode)); //새 노드 생성(동적할당)
@@ -266,7 +257,7 @@ int insertFirst(listNode* h, int key) {
 	newnode->rlink=NULL;
 	newnode->llink=NULL;
 
-	//노드가 존재하지 않을 때  
+	//헤더노드가 존재한 공백일 때  
 	if((h->llink==h)&&(h->rlink==h)) 
 	{
 		newnode->llink=h;
@@ -276,7 +267,7 @@ int insertFirst(listNode* h, int key) {
 		return 1;
 	}
 	
-	//노드가 존재할 때
+	//헤더노드가 존재하고, 또다른 노드가 존재할 때
 	else
 	{
 		newnode->llink=h;
@@ -292,33 +283,29 @@ int insertFirst(listNode* h, int key) {
  */
 int deleteFirst(listNode* h) {
 	listNode* deleted=NULL;		//삭제할 노드를 가리키는 포인터 생성
-	deleted=h->rlink;			//deleted를 처음 노드로 설정하기
+	deleted=h->rlink;			//deleted를 리스트의 헤더 노드를 제외한 처음 노드로 설정하기
 
-	//노드가 존재하지 않을 때 -> 삭제할 노드가 없으므로 에러 발생 
-	if((h->llink==h)&&(h->rlink==h))    /*Q. if(h==NULL)과 동일? 흠.. 아닌 거 같아.*/
+	//헤더노드가 존재한 공백일 때 -> 삭제할 노드가 없으므로 에러 발생 
+	if((h->llink==h)&&(h->rlink==h))    
 	{
 		printf("ERROR: There is no node to remove.\n");
 		return -1;
 	}
 
-	//노드가 1개 존재할 때
-	else if(deleted->rlink==h)  //Q. deleted->rlink==h->llink와 동일한가?
+	//헤더노드가 존재하고, 또다른 노드가 1개 존재할 때
+	else if(deleted->rlink==h)    
 	{
 		deleted->llink->rlink=h;
 		deleted->rlink->llink=h;
-		// // 동일한 코드인가?
-		// h->rlink=h;
-		// h->llink=h;
-
 		free(deleted); //노드 삭제(메모리 해제)
 		return 1;
 	}
 
-	//노드가 2개 이상 존재할 때
+	//헤더노드가 존재하고, 또다른 노드가 2개 이상 존재할 때
 	else  
 	{
-		deleted->rlink->llink=h;  //Q. deleted->rlink->link=h->rlink;라고 안 해도 되나?
-		h->rlink=deleted->rlink;   //Q. h->rlink=deleted->rlink->rlink;라고 안 해도 되나?
+		deleted->rlink->llink=h;  
+		h->rlink=deleted->rlink;   
 		free(deleted);  //노드 삭제(메모리 해제)
 		return 1;
 	}
@@ -331,25 +318,24 @@ int deleteFirst(listNode* h) {
 int invertList(listNode* h) {
 	//listNode형 포인터 2개 필요(이유: 하나만 존재시, 연속적으로 역순으로 재배치가 불가능하다.)
 	listNode* tail=h->rlink;
-	listNode* lead=h->rlink->rlink;  
-
+	listNode* lead=tail->rlink;  
 
 	//노드가 없을 때와 노드가 1개일 때는 역순으로 재배치할 노드가 없음(기존과 동일한 순서)
 	if(((h->llink==h)&&(h->rlink==h))||(h->rlink->rlink==h))
 		return -1;
-	
+
 	//노드가 2개 이상일 때      ////////////////////////////////////////*무슨 문제지????*/
 	else
 	{
 		//처음 노드일 때(tail이 처음 노드를 가리킬 때)
 		tail->rlink=h;
 		tail->llink=lead;
-		h->llink=tail;
+		h->rlink=tail;
 		
 		tail=lead;			//tail을 다음노드로 변경 
 		lead=lead->rlink; 	//lead를 다음노드로 변경
 		
-		while(lead)
+		while(lead!=h)   //다시!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		{
 			tail->rlink=tail->llink;	//tail의 rlink가 가리키는 주소를 tail의 llink가 가리키는 주소로 변경
 			tail->llink=lead;			//tail의 llink가 가리키는 주소를 다음노드의 주소로 변경 
@@ -359,13 +345,11 @@ int invertList(listNode* h) {
 		}
 		//마지막 노드일 때(tail이 마지막 노드를 가리킬 때) 
 		tail->rlink=tail->llink;
-		//tail->llink->rlink=tail;   //Q. 기존과 동일한거 맞지? (안 변한 부분?)
 		tail->llink=h;
-		h->rlink=tail;
+		h->llink=tail;
 		return 0;
 	}
 }
-
 
 
 /**
@@ -378,7 +362,7 @@ int insertNode(listNode* h, int key) {
 	newnode->rlink=NULL;
 	newnode->llink=NULL;
 
-	//노드가 존재하지 않을 때  
+	//헤더노드가 존재한 공백일 때  
 	if((h->llink==h)&&(h->rlink==h)) 
 	{
 		newnode->llink=h;
@@ -388,51 +372,32 @@ int insertNode(listNode* h, int key) {
 		return 0;
 	}
 	
-	/* 노드가 존재할 때
+	/* 헤더노드가 존재하고, 또다른 노드가 존재할 때
 		1. 입력받은 key가 제일 작을 때(처음노드로 삽입)
-		2. 입력받은 key가 제일 클 때(마지막노드로 삽입)
-		3. 그 이외(노드 중간에 삽입) */
+		2. 노드 중간에 삽입
+		3. 입력받은 key가 제일 클 때(마지막노드로 삽입) */
 	else
 	{
-		if(key<(h->rlink->key))   		//Q. 조건식을 이렇게 쓰는 게 맞나?
+		listNode* p=h->rlink;  //p는 헤드노드 제외한 리스트의 처음노드를 가리키도록 설정
+		while(p!=h)
 		{
-			newnode->llink=h;
-			newnode->rlink=h->rlink;
-			h->rlink->llink=newnode;
-			h->rlink=newnode;
-			return 0;
-		}
-		else if(key>(h->llink->key))	//Q. 조건식을 이렇게 쓰는 게 맞나?
-		{
-			newnode->rlink=h;
-			newnode->llink=h->llink;
-			h->llink->rlink=newnode;
-			h->llink=newnode;
-			return 0;
-		}
-		else
-		{
-			listNode* p=h->rlink;  //p는 처음노드를 가리키도록 설정 
-			while((p->rlink)!=NULL)
+			if((p->key)>key)  	//1. 입력받은 key가 제일 작을 때(처음노드로 삽입), 2. 노드 중간에 삽입		
 			{
-				if((p->key)>key)
-				{
-					newnode->rlink=p;
-					newnode->llink=p->llink;
-					p->llink->rlink=newnode;
-					p->llink=newnode;
-					return 0;
-				}
-				else
-					p=p->rlink;		//조건에 해당되지 않으면, p는 다음노드를 가리키도록 설정
+				newnode->rlink=p;
+				newnode->llink=p->llink;
+				p->llink->rlink=newnode;
+				p->llink=newnode;
+				return 0;
 			}
-			//p가 마지막 노드일 때 key가 마지막 노드보다 값이 작으면,
-			newnode->rlink=p;
-			newnode->llink=p->llink;
-			p->llink->rlink=newnode;
-			p->llink=newnode;
-			return 0;
+			else
+				p=p->rlink;		//조건에 해당되지 않으면, p는 다음노드를 가리키도록 설정
 		}
+		//3. 입력받은 key가 제일 클 때(마지막노드로 삽입) : p==h일때
+		newnode->rlink=h;
+		newnode->llink=h->llink;
+		h->llink->rlink=newnode;
+		h->llink=newnode;
+		return 0;
 	}
 }
 
@@ -442,28 +407,25 @@ int insertNode(listNode* h, int key) {
  */
 int deleteNode(listNode* h, int key) {
 	listNode* deleted=NULL;		//삭제할 노드를 가리키는 포인터 생성
-	deleted=h->rlink;			//deleted를 처음 노드로 설정하기
+	deleted=h->rlink;			//deleted를 헤더노드 제외한 리스트의 처음 노드로 설정하기
 
-	//노드가 존재하지 않을 때 -> 삭제할 노드가 없으므로 에러 발생 
-	if((h->llink==h)&&(h->rlink==h))    /*Q. if(h==NULL)과 동일? 흠.. 아닌 거 같아.*/
+	//헤더노드가 존재한 공백일 때 -> 삭제할 노드가 없으므로 에러 발생 
+	if((h->llink==h)&&(h->rlink==h))    
 	{
 		printf("ERROR: There is no node to remove.\n");
 		return -1;
 	}
 
-	/* 노드가 1개 존재할 때
+	/* 헤더노드가 존재하고, 또다른 노드가 1개 존재할 때
 		1. key에 대한 노드가 존재할 때
 		2. key에 대한 노드가 존재하지 않을 때 */
-	else if(deleted->rlink==h)  //Q. deleted->rlink==h->llink와 동일한가?
+	else if(deleted->rlink==h)     
 	{
 		//key에 대한 노드가 존재할 때
 		if(key==(deleted->key))
 		{
 			deleted->llink->rlink=h;
 			deleted->rlink->llink=h;
-			/* 동일한 코드인가?
-				h->rlink=h;
-				h->llink=h; */
 			free(deleted); //노드 삭제(메모리 해제)
 			return 0;
 		}
@@ -475,44 +437,28 @@ int deleteNode(listNode* h, int key) {
 		}
 	}
 
-	/* 노드가 2개 이상 존재할 때
+	/* 헤더노드가 존재하고, 또다른 노드가 2개 이상 존재할 때
 		-key에 대한 노드 존재할 때
 			1. 입력받은 key 처음노드의 값일 때(처음노드 삭제)
 			2. 입력받은 key가 마지막노드의 값일 때(마지막노드 삭제)
 			3. 그 이외(중간노드 삭제)
 		-key에 대한 노드 존재하지 않을 때 */
-	else  
+	else
 	{
-		//위에서 deleted=h->rlink로 deleted를 처음 노드로 설정했음.
-		if(deleted->key==key)
+		while(deleted!=h)
 		{
-			deleted->rlink->llink=h;  //Q. deleted->rlink->link=h->rlink;라고 안 해도 되나?
-			h->rlink=deleted->rlink;   //Q. h->rlink=deleted->rlink->rlink;라고 안 해도 되나?
-			free(deleted);  //노드 삭제(메모리 해제)
-			return 0;
-		}
-		deleted=h->llink;  //deleted를 마지막 노드로 설정
-		if(deleted->key==key)
-		{
-			deleted->llink->rlink=h;
-			h->llink=deleted->llink;
-			free(deleted);  //노드 삭제(메모리 해제)
-			return 0;
-		}
-		deleted=h->rlink; //deleted를 처음노드로 설정 
-		while(deleted->rlink!=NULL)
-		{
-			if(deleted->key==key)
+			//1,2,3 case 모두 해당(h대신 deleted->rlink와 deleted->llink 표현을 이용하여 코드를 가독성 있게 만듦)
+			if((deleted->key)==key)  			
 			{
 				deleted->llink->rlink=deleted->rlink;
 				deleted->rlink->llink=deleted->llink;
 				free(deleted);	//노드 삭제(메모리 해제)
-				return 0;
+				return 0;			
 			}
 			else
-				deleted=deleted->rlink; 	//삭제할 노드를 다음노드로 변경 
+				deleted=deleted->rlink;		//조건에 해당되지 않으면, p는 다음노드를 가리키도록 설정
 		}
-		//deleted가 마지막 노드가 될때까지 key에 대한 노드 존재하지 않음= key에 대한 노드가 리스트에 존재하지 않다.
+		// p==h일때 (key에 대한 노드 존재하지 않을 때와 동일한 의미) -> 삭제할 노드가 없어 오류 발생
 		printf("ERROR: There is no node to remove.\n");
 		return -1;
 	}
