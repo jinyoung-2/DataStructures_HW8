@@ -155,7 +155,7 @@ void printList(listNode* h) {
 	p = h->rlink;	//p는 헤더노드가 가리키는 첫번째 노드를 가리키도록 설정 
 
 	//각 노드마다 데이터 값 출력
-	while(p != NULL && p != h) {                                 //Q.왜 p!=NULL?
+	while(p != NULL && p != h) {                              
 		printf("[ [%d]=%d ] ", i, p->key);
 		p = p->rlink;		//다음노드로 설정
 		i++;
@@ -324,18 +324,18 @@ int invertList(listNode* h) {
 	if(((h->llink==h)&&(h->rlink==h))||(h->rlink->rlink==h))
 		return -1;
 
-	//노드가 2개 이상일 때      ////////////////////////////////////////*무슨 문제지????*/
+	//노드가 2개 이상일 때   
 	else
 	{
 		//처음 노드일 때(tail이 처음 노드를 가리킬 때)
 		tail->rlink=h;
 		tail->llink=lead;
-		h->rlink=tail;
+		h->llink=tail;
 		
 		tail=lead;			//tail을 다음노드로 변경 
 		lead=lead->rlink; 	//lead를 다음노드로 변경
 		
-		while(lead!=h)   //다시!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+		while(lead!=h)   
 		{
 			tail->rlink=tail->llink;	//tail의 rlink가 가리키는 주소를 tail의 llink가 가리키는 주소로 변경
 			tail->llink=lead;			//tail의 llink가 가리키는 주소를 다음노드의 주소로 변경 
@@ -346,7 +346,7 @@ int invertList(listNode* h) {
 		//마지막 노드일 때(tail이 마지막 노드를 가리킬 때) 
 		tail->rlink=tail->llink;
 		tail->llink=h;
-		h->llink=tail;
+		h->rlink=tail;
 		return 0;
 	}
 }
